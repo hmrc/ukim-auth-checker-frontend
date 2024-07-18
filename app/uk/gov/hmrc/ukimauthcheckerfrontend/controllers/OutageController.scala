@@ -16,20 +16,20 @@
 
 package uk.gov.hmrc.ukimauthcheckerfrontend.controllers
 
-import uk.gov.hmrc.ukimauthcheckerfrontend.views.html.HelloWorldPage
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+import uk.gov.hmrc.ukimauthcheckerfrontend.views.html.OutageView
+
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
-class HelloWorldController @Inject()(
+class OutageController @Inject()(
   mcc: MessagesControllerComponents,
-  helloWorldPage: HelloWorldPage)
-    extends FrontendController(mcc) {
+  outageView: OutageView)
+  extends FrontendController(mcc) {
 
-  val helloWorld: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(helloWorldPage()))
+  val onPageLoad: Action[AnyContent] = Action.async { implicit request =>
+    Future.successful(Ok(outageView()))
   }
-
 }
