@@ -16,19 +16,28 @@
 
 @import uk.gov.hmrc.ukimauthcheckerfrontend.config.AppConfig
 @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcStandardPage
+@import uk.gov.hmrc.hmrcfrontend.views.config.StandardBetaBanner
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.Banners
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.HmrcStandardPageParams
+@import uk.gov.hmrc.govukfrontend.views.Aliases.BackLink
+@import uk.gov.hmrc.ukimauthcheckerfrontend.controllers.routes
 
 @this(
-  appConfig: AppConfig,
-  hmrcStandardPage: HmrcStandardPage
+    appConfig: AppConfig,
+    hmrcStandardPage: HmrcStandardPage,
+    standardBetaBanner: StandardBetaBanner
 )
 
-@(pageTitle: Option[String] = None)(contentBlock: Html)(implicit request: RequestHeader, messages: Messages)
+@(pageTitle: Option[String] = None, backLinkUrl: Option[String] = None)(contentBlock: Html)(implicit request: RequestHeader, messages: Messages)
 
 @hmrcStandardPage(
   HmrcStandardPageParams(
     pageTitle = pageTitle,
-    isWelshTranslationAvailable = appConfig.welshLanguageSupportEnabled
+    isWelshTranslationAvailable = appConfig.welshLanguageSupportEnabled,
+    banners = Banners(
+        phaseBanner = Some(standardBetaBanner(url = appConfig.betaFeedbackUrl))
+    ),
+    backLink = backLinkUrl.map(url => BackLink(href = url, attributes = Map()))
   )
 )(contentBlock)
 
