@@ -18,10 +18,11 @@ package uk.gov.hmrc.ukimauthcheckerfrontend.config
 
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
+import io.lemonlabs.uri.Url
 
 @Singleton
 class AppConfig @Inject()(config: Configuration) {
   val welshLanguageSupportEnabled: Boolean = config.getOptional[Boolean]("features.welsh-language-support").getOrElse(false)
 
-  val betaFeedbackUrl: String = "/"
+  val betaFeedbackUrl: String = Url.parse("/").toString();
 }
