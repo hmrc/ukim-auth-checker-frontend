@@ -1,7 +1,7 @@
 
 # ukim-auth-checker-frontend
 
-This is a placeholder README.md for a new repository
+UKIM AUTH CHECKER FRONTEND
 
 ### License
 
