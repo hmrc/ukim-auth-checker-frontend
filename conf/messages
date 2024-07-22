@@ -1,2 +1,6 @@
+
+site.back = Back
+
 service.name = ukim-auth-checker-frontend
 service.text = This is your new service
+

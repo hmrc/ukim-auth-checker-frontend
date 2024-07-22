@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +12,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package uk.gov.hmrc.ukimauthcheckerfrontend.config
+@this(layout: Layout)
 
-import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-import io.lemonlabs.uri.Url
+@()(implicit request: RequestHeader, messages: Messages)
 
-@Singleton
-class AppConfig @Inject()(config: Configuration) {
-  val welshLanguageSupportEnabled: Boolean = config.getOptional[Boolean]("features.welsh-language-support").getOrElse(false)
-
-  val betaFeedbackUrl: String = Url.parse("/").toString();
+@layout(pageTitle = Some("Start Page")) {
+<h1 class="govuk-heading-xl">ukim-auth-checker-frontend</h1>
+<p class="govuk-body">@{messages("service.text")}</p>
 }

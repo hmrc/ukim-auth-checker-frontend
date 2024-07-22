@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +12,17 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package uk.gov.hmrc.ukimauthcheckerfrontend.config
+@import uk.gov.hmrc.ukimauthcheckerfrontend.controllers.routes
 
-import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-import io.lemonlabs.uri.Url
+@this(layout: Layout)
 
-@Singleton
-class AppConfig @Inject()(config: Configuration) {
-  val welshLanguageSupportEnabled: Boolean = config.getOptional[Boolean]("features.welsh-language-support").getOrElse(false)
+@()(implicit request: RequestHeader, messages: Messages)
 
-  val betaFeedbackUrl: String = Url.parse("/").toString();
+@layout(
+  pageTitle = Some("Result Page"),
+  backLinkUrl = Some(routes.InputController.onPageLoad.url)) {
+<h1 class="govuk-heading-xl">Result Page</h1>
+<p class="govuk-body">@{messages("service.text")}</p>
 }

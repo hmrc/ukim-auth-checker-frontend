@@ -14,15 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ukimauthcheckerfrontend.config
+package uk.gov.hmrc.ukimauthcheckerfrontend.controllers
+
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+import uk.gov.hmrc.ukimauthcheckerfrontend.views.html.ResultView
 
 import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-import io.lemonlabs.uri.Url
+import scala.concurrent.Future
 
 @Singleton
-class AppConfig @Inject()(config: Configuration) {
-  val welshLanguageSupportEnabled: Boolean = config.getOptional[Boolean]("features.welsh-language-support").getOrElse(false)
+class ResultController @Inject()(
+  mcc: MessagesControllerComponents,
+  resultView: ResultView)
+  extends FrontendController(mcc) {
 
-  val betaFeedbackUrl: String = Url.parse("/").toString();
+  val onPageLoad: Action[AnyContent] = Action.async { implicit request =>
+    Future.successful(Ok(resultView()))
+  }
 }
