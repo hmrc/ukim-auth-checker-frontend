@@ -1,6 +1,21 @@
 
 site.back = Back
 
-service.name = ukim-auth-checker-frontend
+service.name = Check an EORI number for UK Internal Market Scheme authorisation
 service.text = This is your new service
+
+###Common component messages
+common.button.continue = Continue
+common.error.summary.title = There is a problem
+
+##### Input Page
+input-page.title = What is the EORI number of the business you want to check?
+input-page.eori-input.hint = The first 2 letters are the country code, like GB or XI. This is followed by 12 digits, like GB123456123456.
+input-page.eori-input.error.eori.required = You must enter an EORI number to continue
+eori-input.error.eori.required = Enter an EORI number
+input-page.eori-input.error.country-code = EORI number must start with GB or XI
+eori-input.error.country-code = Re-enter the EORI number with the correct prefix
+input-page.eori-input.error.eori-number = EORI number must be 12 or 15 digits long
+eori-input.error.eori-number = Re-enter an EORI number with the correct number of digits
+
 
