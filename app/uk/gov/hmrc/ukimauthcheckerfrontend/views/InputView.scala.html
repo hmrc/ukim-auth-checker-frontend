@@ -15,15 +15,55 @@
  *@
 
 @import uk.gov.hmrc.ukimauthcheckerfrontend.controllers.routes
+@import uk.gov.hmrc.ukimauthcheckerfrontend.controllers
+@import uk.gov.hmrc.govukfrontend.views.html.components._
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.input.Input
+@import uk.gov.hmrc.govukfrontend.views.Aliases.Label
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
 
-@this(layout: Layout)
+@this(layout: Layout, govukInput: GovukInput,   formHelper: FormWithCSRF, govukButton : GovukButton, govukErrorSummary: GovukErrorSummary)
 
-@()(implicit request: RequestHeader, messages: Messages)
-
+@(form: Form[_])(implicit request: RequestHeader, messages: Messages)
+@key = @{"input-page"}
+@title = @{messages("input-page.title")}
 @layout(
-  pageTitle = Some("Input Page"),
+  pageTitle = Some(title),
   backLinkUrl = Some(routes.IndexController.onPageLoad.url)
 ) {
-<h1 class="govuk-heading-xl">Input Page</h1>
-<p class="govuk-body">@{messages("service.text")}</p>
+ @formHelper(action = controllers.routes.InputController.postInputEori) {
+  @if(form.hasErrors) {
+   @govukErrorSummary(
+    ErrorSummary(
+     errorList = Seq(
+      ErrorLink(
+       href = Some(s"#${form.errors.head.key}"),
+       content = Text(s"${messages(s"$key.${form.errors.head.key}.${form.errors.head.message}")}"),
+       attributes = Map("class" ->"govuk-link")
+      )
+     ),
+     title = Text(messages("common.error.summary.title"))
+    )
+   )
+  }
+
+  @govukInput(Input(
+   id = "eori-input",
+   name = "eori-input",
+   errorMessage = if (form.hasErrors && form.errors.head.key == "eori-input") {
+    Some(ErrorMessage(content = Text(s"${messages(s"${form.errors.head.key}.${form.errors.head.message}")}")))
+   } else None,
+   value = form.data.get("eori-input"),
+   label = Label(
+    isPageHeading = true,
+    classes = "govuk-label--l",
+    content = Text(title)
+   ),
+   hint = Some(Hint(
+    content = Text(messages("input-page.eori-input.hint"))
+   ))
+  ))
+  @govukButton(Button(
+   content = Text(messages("common.button.continue"))
+  ))
+ }
 }

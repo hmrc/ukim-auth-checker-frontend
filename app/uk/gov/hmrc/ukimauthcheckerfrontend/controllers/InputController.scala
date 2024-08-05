@@ -18,18 +18,29 @@ package uk.gov.hmrc.ukimauthcheckerfrontend.controllers
 
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+import uk.gov.hmrc.ukimauthcheckerfrontend.forms.EoriForm
 import uk.gov.hmrc.ukimauthcheckerfrontend.views.html.InputView
-
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
-class InputController @Inject()(
-  mcc: MessagesControllerComponents,
-  inputView: InputView)
-  extends FrontendController(mcc) {
-
+class InputController @Inject() (
+    mcc: MessagesControllerComponents,
+    inputView: InputView
+) extends FrontendController(mcc) {
   val onPageLoad: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(inputView()))
+    Future.successful(Ok(inputView(EoriForm.form)))
+  }
+  def postInputEori = Action.async { implicit request =>
+    EoriForm.form
+      .bindFromRequest()
+      .fold(
+        errors => {
+          Future.successful(BadRequest(inputView(errors)))
+        },
+        form => {
+          Future.successful(Redirect(routes.ResultController.onPageLoad))
+        }
+      )
   }
 }
