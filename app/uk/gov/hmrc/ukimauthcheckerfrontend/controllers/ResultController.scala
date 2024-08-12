@@ -16,20 +16,52 @@
 
 package uk.gov.hmrc.ukimauthcheckerfrontend.controllers
 
+import javax.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ukimauthcheckerfrontend.views.html.ResultView
+import uk.gov.hmrc.ukimauthcheckerfrontend.connectors.Connector
+import uk.gov.hmrc.ukimauthcheckerfrontend.config.ErrorHandler
+import uk.gov.hmrc.ukimauthcheckerfrontend.models.{AuthRequest, AuthResponse, Eori}
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
+import java.time.LocalDate
 
 @Singleton
 class ResultController @Inject()(
-  mcc: MessagesControllerComponents,
-  resultView: ResultView)
-  extends FrontendController(mcc) {
+                                  mcc: MessagesControllerComponents,
+                                  resultView: ResultView,
+                                  Connector: Connector,
+                                  errorHandler: ErrorHandler
+                                )(implicit ec: ExecutionContext) extends FrontendController(mcc) {
 
-  val onPageLoad: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(resultView()))
+  def onPageLoad: Action[AnyContent] = Action.async { implicit request =>
+    request.session.get("eori") match {
+      case Some(eoriNumber) =>
+        val authRequest = AuthRequest(
+          validityDate = LocalDate.now(),
+          authType = "UKIM",
+          eoris = Seq(Eori(eoriNumber))
+        )
+
+        Connector.validateCustoms(authRequest).map {
+          case Right(response: AuthResponse) =>
+
+            val isValid: Boolean = response.results.head.valid
+            Ok(resultView(isValid = isValid, Some(eoriNumber)))
+          case Left(_) =>
+            InternalServerError("An error occurred while processing your request.")
+        }.recover {
+          case ex: Exception =>
+            InternalServerError("An error occurred while processing your request.")
+        }
+
+      case None =>
+        errorHandler.standardErrorTemplate(
+          pageTitle = "Error",
+          heading = "EORI Not Found",
+          message = "The EORI number could not be found in the session. Please try again."
+        ).map(Ok(_))
+    }
   }
 }

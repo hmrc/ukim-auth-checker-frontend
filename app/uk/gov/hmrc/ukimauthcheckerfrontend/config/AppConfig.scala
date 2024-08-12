@@ -18,11 +18,21 @@ package uk.gov.hmrc.ukimauthcheckerfrontend.config
 
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
-import io.lemonlabs.uri.Url
+import io.lemonlabs.uri.{Url, UrlPath}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
 
 @Singleton
-class AppConfig @Inject()(config: Configuration) {
+class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)  {
   val welshLanguageSupportEnabled: Boolean = config.getOptional[Boolean]("features.welsh-language-support").getOrElse(false)
 
   val betaFeedbackUrl: String = Url.parse("/").toString();
+
+  lazy val BaseUrl: Url = Url.parse(servicesConfig.baseUrl("eis"))
+
+  lazy val eisUri =
+    UrlPath.parse(config.get[String]("microservice.services.eis.uri"))
+
+  lazy val authToken: String =
+    config.get[String]("microservice.services.eis.authorisation.token")
 }

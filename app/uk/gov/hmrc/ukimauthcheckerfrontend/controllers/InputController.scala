@@ -39,7 +39,7 @@ class InputController @Inject() (
           Future.successful(BadRequest(inputView(errors)))
         },
         form => {
-          Future.successful(Redirect(routes.ResultController.onPageLoad))
+          Future.successful(Redirect(routes.ResultController.onPageLoad).withSession("eori" -> form.value))
         }
       )
   }
