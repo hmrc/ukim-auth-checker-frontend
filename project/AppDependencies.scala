@@ -19,6 +19,9 @@ object AppDependencies {
     "uk.gov.hmrc"             %% "bootstrap-test-play-30"     % bootstrapVersion            % Test,
     "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-30"    % hmrcMongoVersion            % Test,
     "org.jsoup"               %  "jsoup"                      % "1.13.1"            % Test,
+    "org.scalatest"           %% "scalatest"                  % "3.2.15"              % Test,
+    "org.mockito"             %% "mockito-scala"              % "1.17.20"             % Test,
+    "org.mockito"             %% "mockito-scala-scalatest"    % "1.17.20"             % Test
   )
 
   val it = Seq.empty
