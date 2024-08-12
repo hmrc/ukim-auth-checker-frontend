@@ -24,7 +24,6 @@ import java.time.LocalDate
 class AuthRequestSpec extends AnyFlatSpec with Matchers {
 
   "AuthRequest" should "serialize to JSON correctly" in {
-    // Arrange
     val eoris = Seq(Eori("GB1234567890"), Eori("GB0987654321"))
     val authRequest = AuthRequest(
       validityDate = LocalDate.of(2024, 8, 12),
@@ -40,15 +39,12 @@ class AuthRequestSpec extends AnyFlatSpec with Matchers {
         |}""".stripMargin
     )
 
-    // Act
     val json = Json.toJson(authRequest)
 
-    // Assert
     json shouldBe expectedJson
   }
 
   it should "fail to deserialize from invalid JSON" in {
-    // Arrange
     val invalidJson = Json.parse(
       """{
         |  "validityDate": "2024-08-12",
@@ -56,10 +52,8 @@ class AuthRequestSpec extends AnyFlatSpec with Matchers {
         |}""".stripMargin
     )
 
-    // Act
     val result = invalidJson.validate[AuthRequest]
 
-    // Assert
     result shouldBe a[JsError]
   }
 }

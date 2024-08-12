@@ -55,7 +55,7 @@ class ResultControllerSpec extends AnyFlatSpec with Matchers with MockitoSugar {
   )
 
   "ResultController" should "return OK and render the result view when auth request is successful" in {
-    // Arrange
+
     val eoriNumber = "GB1234567890"
     val authRequest = AuthRequest(
       validityDate = LocalDate.now(),
@@ -75,16 +75,13 @@ class ResultControllerSpec extends AnyFlatSpec with Matchers with MockitoSugar {
     when(mockResultView(isValid = true, Some(eoriNumber)))
       .thenReturn(HtmlFormat.empty) // Mock HTML content for simplicity
 
-    // Act
     val result = controller.onPageLoad.apply(FakeRequest().withSession("eori" -> eoriNumber))
 
-    // Assert
     status(result) shouldBe OK
     contentAsString(result) shouldBe "" // Adjust based on your view's expected output
   }
 
   it should "return INTERNAL_SERVER_ERROR when auth request fails" in {
-    // Arrange
     val eoriNumber = "GB1234567890"
     val authRequest = AuthRequest(
       validityDate = LocalDate.now(),
@@ -101,27 +98,22 @@ class ResultControllerSpec extends AnyFlatSpec with Matchers with MockitoSugar {
       message = "An error occurred while processing your request. Please try again later."
     )).thenReturn(Future.successful(HtmlFormat.empty)) // Mock HTML content for simplicity
 
-    // Act
     val result = controller.onPageLoad.apply(FakeRequest().withSession("eori" -> eoriNumber))
 
-    // Assert
     status(result) shouldBe INTERNAL_SERVER_ERROR
-    contentAsString(result) shouldBe "" // Adjust based on your view's expected output
+    contentAsString(result) shouldBe ""
   }
 
   it should "return Error view when EORI is not found in the session" in {
-    // Arrange
     when(mockErrorHandler.standardErrorTemplate(
       pageTitle = "Error",
       heading = "EORI Not Found",
       message = "The EORI number could not be found in the session. Please try again."
-    )).thenReturn(Future.successful(HtmlFormat.empty)) // Mock HTML content for simplicity
+    )).thenReturn(Future.successful(HtmlFormat.empty))
 
-    // Act
     val result = controller.onPageLoad.apply(FakeRequest())
 
-    // Assert
     status(result) shouldBe OK
-    contentAsString(result) shouldBe "" // Adjust based on your view's expected output
+    contentAsString(result) shouldBe ""
   }
 }

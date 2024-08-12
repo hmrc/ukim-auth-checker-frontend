@@ -23,7 +23,6 @@ import play.api.libs.json.{Json, JsError, JsSuccess}
 class AuthResponseResultSpec extends AnyFlatSpec with Matchers {
 
   "AuthResponseResult" should "serialize to JSON correctly" in {
-    // Arrange
     val authResponseResult = AuthResponseResult(
       eori = Eori("GB1234567890"),
       valid = true,
@@ -38,15 +37,12 @@ class AuthResponseResultSpec extends AnyFlatSpec with Matchers {
         |}""".stripMargin
     )
 
-    // Act
     val json = Json.toJson(authResponseResult)
 
-    // Assert
     json shouldBe expectedJson
   }
 
   it should "fail to deserialize from invalid JSON" in {
-    // Arrange
     val invalidJson = Json.parse(
       """{
         |  "eori": "GB1234567890",
@@ -54,10 +50,8 @@ class AuthResponseResultSpec extends AnyFlatSpec with Matchers {
         |}""".stripMargin
     )
 
-    // Act
     val result = invalidJson.validate[AuthResponseResult]
 
-    // Assert
     result shouldBe a[JsError]
   }
 }

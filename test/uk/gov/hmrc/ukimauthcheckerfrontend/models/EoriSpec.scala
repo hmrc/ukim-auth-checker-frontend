@@ -23,29 +23,23 @@ import play.api.libs.json.{Json, JsError, JsSuccess}
 class EoriSpec extends AnyFlatSpec with Matchers {
 
   "Eori" should "serialize to JSON correctly" in {
-    // Arrange
     val eori = Eori("GB1234567890")
     val expectedJson = Json.parse(
       """"GB1234567890""""
     )
 
-    // Act
     val json = Json.toJson(eori)
 
-    // Assert
     json shouldBe expectedJson
   }
 
   it should "fail to deserialize from invalid JSON" in {
-    // Arrange
     val invalidJson = Json.parse(
       """"INVALIDEORI""""
     )
 
-    // Act
     val result = invalidJson.validate[Eori]
 
-    // Assert
     result shouldBe a[JsError]
   }
 }

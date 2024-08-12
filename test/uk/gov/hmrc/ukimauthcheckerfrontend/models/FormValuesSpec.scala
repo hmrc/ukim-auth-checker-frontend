@@ -25,24 +25,19 @@ class FormValuesSpec extends AnyFlatSpec with Matchers {
   implicit val format: OFormat[FormValues] = Json.format[FormValues]
 
   it should "fail to deserialize from invalid JSON" in {
-    // Arrange
     val invalidJson = Json.parse(
       """123"""
     )
 
-    // Act
     val result = invalidJson.validate[FormValues]
 
-    // Assert
     result shouldBe a[JsError]
   }
 
   it should "create FormValues from Boolean correctly" in {
-    // Arrange
     val trueFormValue = FormValues(true)
     val falseFormValue = FormValues(false)
 
-    // Act & Assert
     trueFormValue shouldBe FormValues("true")
     falseFormValue shouldBe FormValues("false")
   }

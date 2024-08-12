@@ -25,7 +25,6 @@ import java.time.ZonedDateTime
 class AuthResponseSpec extends AnyFlatSpec with Matchers {
 
   "AuthResponse" should "serialize to JSON correctly" in {
-    // Arrange
     val processingDate = ZonedDateTime.parse("2024-08-12T10:15:30Z")
     val results = Seq(AuthResponseResult(Eori("GB1234567890"), valid = true, code = 200))
     val authResponse = AuthResponse(
@@ -48,15 +47,12 @@ class AuthResponseSpec extends AnyFlatSpec with Matchers {
         |}""".stripMargin
     )
 
-    // Act
     val json = Json.toJson(authResponse)
 
-    // Assert
     json shouldBe expectedJson
   }
 
   it should "fail to deserialize from invalid JSON" in {
-    // Arrange
     val invalidJson = Json.parse(
       """{
         |  "processingDate": "2024-08-12T10:15:30Z",
@@ -64,10 +60,8 @@ class AuthResponseSpec extends AnyFlatSpec with Matchers {
         |}""".stripMargin
     )
 
-    // Act
     val result = invalidJson.validate[AuthResponse]
 
-    // Assert
     result shouldBe a[JsError]
   }
 }
