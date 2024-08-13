@@ -16,116 +16,71 @@
 
 package uk.gov.hmrc.ukimauthcheckerfrontend.connectors
 
-import com.typesafe.config.Config
-import org.apache.pekko.actor.ActorSystem
-import play.api.Logging
-import play.api.http.{HeaderNames, MimeTypes}
-import play.api.http.Status.{FORBIDDEN, OK}
-
-import javax.inject.{Inject, Singleton}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, Retries, StringContextOps}
-import uk.gov.hmrc.http.HttpReads.Implicits._
-
-import scala.concurrent.{ExecutionContext, Future}
-import play.api.libs.json._
-import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.ukimauthcheckerfrontend.config.AppConfig
-
-import uk.gov.hmrc.ukimauthcheckerfrontend.models.constants.{
-  CustomHeaderNames,
-  HeaderValues
-}
-import uk.gov.hmrc.ukimauthcheckerfrontend.models.errors.{
-  InvalidAuthTokenPdsError,
-  ParseResponseFailure,
-  Error,
-  ErrorDetail
-}
+import com.google.inject.{ImplementedBy, Inject, Singleton}
 import uk.gov.hmrc.ukimauthcheckerfrontend.models.{
+  DatedAuthorisationRequest,
   AuthRequest,
   AuthResponse,
-  Rfc7231DateTime
+  ValidationErrorResponse,
+  PdsAuthCheckerRequest
 }
-import uk.gov.hmrc.ukimauthcheckerfrontend.utils.HeaderCarrierExtensions
+import play.api.http.Status.{BAD_REQUEST, OK}
+import play.api.libs.json.OFormat.oFormatFromReadsAndOWrites
+import play.api.libs.json.{JsResult, Json}
+import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{
+  HeaderCarrier,
+  HttpResponse,
+  StringContextOps,
+  UpstreamErrorResponse
+}
+import uk.gov.hmrc.ukimauthcheckerfrontend.config.AppConfig
+
+import scala.concurrent.{ExecutionContext, Future}
+
+@ImplementedBy(classOf[PdsAuthCheckerConnectorImpl])
+trait PdsAuthCheckerConnector {
+  def check(request: DatedAuthorisationRequest)(implicit
+                                                hc: HeaderCarrier,
+                                                ec: ExecutionContext
+  ): Future[Either[ValidationErrorResponse, AuthResponse]]
+}
 
 @Singleton
-class Connector @Inject()(
-                               client: HttpClientV2,
-                               appConfig: AppConfig,
-                               override val configuration: Config,
-                               override val actorSystem: ActorSystem
-                             )(implicit
-                               ec: ExecutionContext
-                             ) extends Logging
-  with Retries
-  with HeaderCarrierExtensions {
+class PdsAuthCheckerConnectorImpl @Inject() (
+                                              httpClientV2: HttpClientV2,
+                                              appConfig: AppConfig
+                                            ) extends PdsAuthCheckerConnector {
+  def check(request: DatedAuthorisationRequest)(implicit
+                                                hc: HeaderCarrier,
+                                                ec: ExecutionContext
+  ): Future[Either[ValidationErrorResponse, AuthResponse]] = {
 
-  private val Endpoint =
-    appConfig.BaseUrl.withPath(appConfig.eisUri)
-
-  private val authToken = appConfig.authToken
-
-  def validateCustoms(
-                       authRequest: AuthRequest
-                     )(implicit
-                       hc: HeaderCarrier
-                     ): Future[Either[Error, AuthResponse]] = {
-    client
-      .post(url"$Endpoint")
-      .setHeader(integrationFrameworkHeaders: _*)
-      .withBody(Json.toJson(authRequest))
+    val authType = "UKIM"
+    val url = appConfig.pdsAuthCheckerUrl.addPathParts("authorisations")
+    val pdsRequest =
+      PdsAuthCheckerRequest(request.date, authType, request.eoris )
+    httpClientV2
+      .post(url"$url")
+      .withBody(Json.toJson(pdsRequest))
       .execute[HttpResponse]
       .flatMap { response =>
+        println(s"Response Results Connector: ${response.json}")
         response.status match {
-          case OK        => handleResponse(response)
-          case FORBIDDEN => handleForbidden(response)
+          case OK =>
+            response.json
+              .validate[AuthResponse]
+              .map(result => Future.successful(Right(result)))
+              .recoverTotal(error => Future.failed(JsResult.Exception(error)))
+          case BAD_REQUEST =>
+            response.json
+              .validate[ValidationErrorResponse]
+              .map(result => Future.successful(Left(result)))
+              .recoverTotal(error => Future.failed(JsResult.Exception(error)))
           case _ =>
-            logger.warn(
-              s"Did not receive OK from PDS - instead got ${response.status} and ${response.body}"
-            )
-            Future.failed(
-              new RuntimeException(s"Unexpected status: ${response.status}")
-            )
+            Future.failed(UpstreamErrorResponse(response.body, response.status))
         }
       }
-  }
-
-  private def integrationFrameworkHeaders(implicit
-                                          hc: HeaderCarrier
-                                         ): Seq[(String, String)] =
-    Seq(
-      (CustomHeaderNames.xCorrelationId, generateCorrelationId()),
-      (HeaderNames.DATE, Rfc7231DateTime.now),
-      (HeaderNames.CONTENT_TYPE, HeaderValues.JsonCharsetUtf8),
-      (HeaderNames.ACCEPT, MimeTypes.JSON),
-      (HeaderNames.AUTHORIZATION, s"Bearer $authToken")
-    )
-
-  private def handleResponse(
-                              response: HttpResponse
-                            ): Future[Either[Error, AuthResponse]] = {
-    response.json.validate[AuthResponse] match {
-      case JsSuccess(result, _) => Future.successful(Right(result))
-      case JsError(errors) =>
-        logger.warn(
-          s"Unable to validate successful response - with the following errors - $errors"
-        )
-        Future.successful(Left(ParseResponseFailure()))
-    }
-  }
-
-  private def handleForbidden(
-                               response: HttpResponse
-                             ): Future[Either[Error, AuthResponse]] = {
-    logger.error(
-      s"PDS has rejected bearer token with the following: ${response.status} and ${response.body}"
-    )
-    response.json.validate[ErrorDetail] match {
-      case JsSuccess(_, _) =>
-        Future.successful(Left(InvalidAuthTokenPdsError()))
-      case JsError(errors) =>
-        logger.warn(s"Unable to parse PDS error response: $errors")
-        Future.successful(Left(ParseResponseFailure()))
-    }
   }
 }

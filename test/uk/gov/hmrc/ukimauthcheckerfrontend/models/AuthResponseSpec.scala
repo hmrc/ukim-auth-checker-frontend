@@ -19,14 +19,13 @@ package uk.gov.hmrc.ukimauthcheckerfrontend.models
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{Json, JsError, JsSuccess}
-import uk.gov.hmrc.ukimauthcheckerfrontend.models._
-import java.time.ZonedDateTime
+import java.time.LocalDateTime
 
 class AuthResponseSpec extends AnyFlatSpec with Matchers {
 
   "AuthResponse" should "serialize to JSON correctly" in {
-    val processingDate = ZonedDateTime.parse("2024-08-12T10:15:30Z")
-    val results = Seq(AuthResponseResult(Eori("GB1234567890"), valid = true, code = 200))
+    val processingDate = LocalDateTime.parse("2024-08-12T10:15:30")
+    val results = Seq(AuthCheckerResult(Eori("GB1234567890"), valid = true, code = 200))
     val authResponse = AuthResponse(
       processingDate = processingDate,
       authType = "UKIM",
@@ -35,7 +34,7 @@ class AuthResponseSpec extends AnyFlatSpec with Matchers {
 
     val expectedJson = Json.parse(
       """{
-        |  "processingDate": "2024-08-12T10:15:30Z",
+        |  "processingDate": "2024-08-12T10:15:30",
         |  "authType": "UKIM",
         |  "results": [
         |    {
@@ -55,13 +54,45 @@ class AuthResponseSpec extends AnyFlatSpec with Matchers {
   it should "fail to deserialize from invalid JSON" in {
     val invalidJson = Json.parse(
       """{
-        |  "processingDate": "2024-08-12T10:15:30Z",
+        |  "processingDate": "2024-08-12T10:15:30",
         |  "authType": "UKIM"
         |}""".stripMargin
     )
 
-    val result = invalidJson.validate[AuthResponse]
+    invalidJson.validate[AuthResponse] shouldBe a[JsError]
+  }
+}
 
-    result shouldBe a[JsError]
+class AuthCheckerResultSpec extends AnyFlatSpec with Matchers {
+
+  "AuthCheckerResult" should "serialize to JSON correctly" in {
+    val authCheckerResult = AuthCheckerResult(
+      eori = Eori("GB1234567890"),
+      valid = true,
+      code = 200
+    )
+
+    val expectedJson = Json.parse(
+      """{
+        |  "eori": "GB1234567890",
+        |  "valid": true,
+        |  "code": 200
+        |}""".stripMargin
+    )
+
+    val json = Json.toJson(authCheckerResult)
+
+    json shouldBe expectedJson
+  }
+
+  it should "fail to deserialize from invalid JSON" in {
+    val invalidJson = Json.parse(
+      """{
+        |  "eori": "GB1234567890",
+        |  "valid": true
+        |}""".stripMargin
+    )
+
+    invalidJson.validate[AuthCheckerResult] shouldBe a[JsError]
   }
 }

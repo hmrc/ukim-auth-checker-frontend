@@ -20,9 +20,9 @@ import javax.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ukimauthcheckerfrontend.views.html.ResultView
-import uk.gov.hmrc.ukimauthcheckerfrontend.connectors.Connector
+import uk.gov.hmrc.ukimauthcheckerfrontend.connectors.PdsAuthCheckerConnector
 import uk.gov.hmrc.ukimauthcheckerfrontend.config.ErrorHandler
-import uk.gov.hmrc.ukimauthcheckerfrontend.models.{AuthRequest, AuthResponse, Eori}
+import uk.gov.hmrc.ukimauthcheckerfrontend.models.{DatedAuthorisationRequest, Eori}
 
 import scala.concurrent.{ExecutionContext, Future}
 import java.time.LocalDate
@@ -31,29 +31,36 @@ import java.time.LocalDate
 class ResultController @Inject()(
                                   mcc: MessagesControllerComponents,
                                   resultView: ResultView,
-                                  Connector: Connector,
+                                  pdsAuthCheckerConnector: PdsAuthCheckerConnector,
                                   errorHandler: ErrorHandler
                                 )(implicit ec: ExecutionContext) extends FrontendController(mcc) {
 
   def onPageLoad: Action[AnyContent] = Action.async { implicit request =>
     request.session.get("eori") match {
       case Some(eoriNumber) =>
-        val authRequest = AuthRequest(
-          validityDate = LocalDate.now(),
-          authType = "UKIM",
-          eoris = Seq(Eori(eoriNumber))
+        val datedAuthRequest = DatedAuthorisationRequest(
+          eoris = Seq(Eori(eoriNumber)),
+          date = LocalDate.now().toString
         )
 
-        Connector.validateCustoms(authRequest).map {
-          case Right(response: AuthResponse) =>
-
+        pdsAuthCheckerConnector.check(datedAuthRequest).flatMap {
+          case Right(response) =>
+            println(s"Response Results: ${response.results}")
             val isValid: Boolean = response.results.head.valid
-            Ok(resultView(isValid = isValid, Some(eoriNumber)))
-          case Left(_) =>
-            InternalServerError("An error occurred while processing your request.")
-        }.recover {
+            Future.successful(Ok(resultView(isValid = isValid, Some(eoriNumber))))
+          case Left(validationError) =>
+            errorHandler.standardErrorTemplate(
+              pageTitle = "Validation Error",
+              heading = "Validation Error",
+              message = "An error occurred while validating your request"
+            ).map(BadRequest(_))
+        }.recoverWith {
           case ex: Exception =>
-            InternalServerError("An error occurred while processing your request.")
+            errorHandler.standardErrorTemplate(
+              pageTitle = "Internal Server Error",
+              heading = "Internal Server Error",
+              message = "An unexpected error occurred while processing your request."
+            ).map(InternalServerError(_))
         }
 
       case None =>

@@ -18,14 +18,22 @@ package uk.gov.hmrc.ukimauthcheckerfrontend.models
 
 import play.api.libs.json.{Json, OFormat}
 
-import java.time.ZonedDateTime
+import java.time.LocalDateTime
 
 case class AuthResponse(
-                            processingDate: ZonedDateTime,
-                            authType: String,
-                            results: Seq[AuthResponseResult]
-                          )
+                                   processingDate: LocalDateTime,
+                                   authType: String,
+                                   results: Seq[AuthCheckerResult]
+                                 )
 
 object AuthResponse {
-  implicit val format: OFormat[AuthResponse] = Json.format[AuthResponse]
+  implicit val format: OFormat[AuthResponse] =
+    Json.format[AuthResponse]
+}
+
+case class AuthCheckerResult(eori: Eori, valid: Boolean, code: Int)
+
+object AuthCheckerResult {
+  implicit val format: OFormat[AuthCheckerResult] =
+    Json.format[AuthCheckerResult]
 }

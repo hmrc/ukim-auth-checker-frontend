@@ -27,12 +27,8 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   val welshLanguageSupportEnabled: Boolean = config.getOptional[Boolean]("features.welsh-language-support").getOrElse(false)
 
   val betaFeedbackUrl: String = Url.parse("/").toString();
+  
+  val appName: String = config.get[String]("appName")
 
-  lazy val BaseUrl: Url = Url.parse(servicesConfig.baseUrl("eis"))
-
-  lazy val eisUri =
-    UrlPath.parse(config.get[String]("microservice.services.eis.uri"))
-
-  lazy val authToken: String =
-    config.get[String]("microservice.services.eis.authorisation.token")
+  val pdsAuthCheckerUrl = Url.parse(servicesConfig.baseUrl("pds-auth-checker-api"))
 }

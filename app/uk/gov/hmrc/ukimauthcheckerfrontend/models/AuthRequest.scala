@@ -20,11 +20,36 @@ import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
 
-case class AuthRequest(
-                           validityDate: LocalDate,
-                           authType: String,
-                           eoris: Seq[Eori]
-                         )
+case class AuthRequest(eoris: Seq[Eori], date: String)
+
 object AuthRequest {
-  implicit val format: OFormat[AuthRequest] = Json.format[AuthRequest]
+  implicit val format: OFormat[AuthRequest] =
+    Json.format[AuthRequest]
+
+}
+
+case class DatedAuthorisationRequest(eoris: Seq[Eori], date: String)
+
+object DatedAuthorisationRequest {
+  implicit val format: OFormat[DatedAuthorisationRequest] =
+    Json.format[DatedAuthorisationRequest]
+
+  def createFromRequest(
+                         request: AuthRequest
+                       ): DatedAuthorisationRequest =
+    DatedAuthorisationRequest(
+      request.eoris,
+      request.date
+    )
+}
+
+case class PdsAuthCheckerRequest(
+                                  validityDate: String,
+                                  authType: String,
+                                  eoris: Seq[Eori]
+                                )
+
+object PdsAuthCheckerRequest {
+  implicit val format: OFormat[PdsAuthCheckerRequest] =
+    Json.format[PdsAuthCheckerRequest]
 }
