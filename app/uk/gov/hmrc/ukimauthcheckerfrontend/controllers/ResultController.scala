@@ -45,7 +45,6 @@ class ResultController @Inject()(
 
         pdsAuthCheckerConnector.check(datedAuthRequest).flatMap {
           case Right(response) =>
-            println(s"Response Results: ${response.results}")
             val isValid: Boolean = response.results.head.valid
             Future.successful(Ok(resultView(isValid = isValid, Some(eoriNumber))))
           case Left(validationError) =>

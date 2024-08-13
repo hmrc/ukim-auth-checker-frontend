@@ -66,7 +66,6 @@ class PdsAuthCheckerConnectorImpl @Inject() (
       .withBody(Json.toJson(pdsRequest))
       .execute[HttpResponse]
       .flatMap { response =>
-        println(s"Response Results Connector: ${response.json}")
         response.status match {
           case OK =>
             response.json
