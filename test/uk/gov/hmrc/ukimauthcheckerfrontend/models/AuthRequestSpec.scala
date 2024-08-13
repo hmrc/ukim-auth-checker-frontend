@@ -30,11 +30,9 @@ class AuthRequestSpec extends AnyFlatSpec with Matchers {
       date = LocalDate.of(2024, 8, 12).toString
     )
 
-    val expectedJson = Json.parse(
-      """{
-        |  "eoris": ["GB1234567890", "GB0987654321"],
-        |  "date": "2024-08-12"
-        |}""".stripMargin
+    val expectedJson = Json.obj(
+      "eoris" -> Json.arr("GB1234567890", "GB0987654321"),
+      "date" -> "2024-08-12"
     )
 
     val json = Json.toJson(authRequest)
@@ -43,10 +41,8 @@ class AuthRequestSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "fail to deserialize from invalid JSON" in {
-    val invalidJson = Json.parse(
-      """{
-        |  "eoris": ["GB1234567890", "GB0987654321"]
-        |}""".stripMargin
+    val invalidJson = Json.obj(
+      "eoris" -> Json.arr("GB1234567890", "GB0987654321")
     )
 
     invalidJson.validate[AuthRequest] shouldBe a[JsError]

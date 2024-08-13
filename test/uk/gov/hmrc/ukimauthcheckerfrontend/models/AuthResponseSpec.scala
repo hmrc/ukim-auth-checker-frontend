@@ -32,18 +32,16 @@ class AuthResponseSpec extends AnyFlatSpec with Matchers {
       results = results
     )
 
-    val expectedJson = Json.parse(
-      """{
-        |  "processingDate": "2024-08-12T10:15:30",
-        |  "authType": "UKIM",
-        |  "results": [
-        |    {
-        |      "eori": "GB1234567890",
-        |      "valid": true,
-        |      "code": 200
-        |    }
-        |  ]
-        |}""".stripMargin
+    val expectedJson = Json.obj(
+      "processingDate" -> "2024-08-12T10:15:30",
+      "authType" -> "UKIM",
+      "results" -> Json.arr(
+        Json.obj(
+          "eori" -> "GB1234567890",
+          "valid" -> true,
+          "code" -> 200
+        )
+      )
     )
 
     val json = Json.toJson(authResponse)
@@ -52,47 +50,11 @@ class AuthResponseSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "fail to deserialize from invalid JSON" in {
-    val invalidJson = Json.parse(
-      """{
-        |  "processingDate": "2024-08-12T10:15:30",
-        |  "authType": "UKIM"
-        |}""".stripMargin
+    val invalidJson = Json.obj(
+      "processingDate" -> "2024-08-12T10:15:30",
+      "authType" -> "UKIM"
     )
 
     invalidJson.validate[AuthResponse] shouldBe a[JsError]
-  }
-}
-
-class AuthCheckerResultSpec extends AnyFlatSpec with Matchers {
-
-  "AuthCheckerResult" should "serialize to JSON correctly" in {
-    val authCheckerResult = AuthCheckerResult(
-      eori = Eori("GB1234567890"),
-      valid = true,
-      code = 200
-    )
-
-    val expectedJson = Json.parse(
-      """{
-        |  "eori": "GB1234567890",
-        |  "valid": true,
-        |  "code": 200
-        |}""".stripMargin
-    )
-
-    val json = Json.toJson(authCheckerResult)
-
-    json shouldBe expectedJson
-  }
-
-  it should "fail to deserialize from invalid JSON" in {
-    val invalidJson = Json.parse(
-      """{
-        |  "eori": "GB1234567890",
-        |  "valid": true
-        |}""".stripMargin
-    )
-
-    invalidJson.validate[AuthCheckerResult] shouldBe a[JsError]
   }
 }

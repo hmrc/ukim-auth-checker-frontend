@@ -27,8 +27,6 @@ class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)
   val welshLanguageSupportEnabled: Boolean = config.getOptional[Boolean]("features.welsh-language-support").getOrElse(false)
 
   val betaFeedbackUrl: String = Url.parse("/").toString();
-  
-  val appName: String = config.get[String]("appName")
 
   val pdsAuthCheckerUrl = Url.parse(servicesConfig.baseUrl("pds-auth-checker-api"))
 }

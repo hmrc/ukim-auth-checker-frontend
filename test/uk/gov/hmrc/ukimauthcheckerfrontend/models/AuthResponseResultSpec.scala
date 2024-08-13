@@ -29,25 +29,21 @@ class AuthResponseResultSpec extends AnyFlatSpec with Matchers {
       code = 200
     )
 
-    val expectedJson = Json.parse(
-      """{
-        |  "eori": "GB1234567890",
-        |  "valid": true,
-        |  "code": 200
-        |}""".stripMargin
+    val expectedJson = Json.obj(
+      "eori" -> "GB1234567890",
+      "valid" ->  true,
+      "code" -> 200
     )
-
     val json = Json.toJson(authResponseResult)
 
     json shouldBe expectedJson
   }
 
   it should "fail to deserialize from invalid JSON" in {
-    val invalidJson = Json.parse(
-      """{
-        |  "eori": "GB1234567890",
-        |  "valid": true
-        |}""".stripMargin
+
+    val invalidJson = Json.obj(
+      "eoris" -> "GB1234567890",
+      "valid" -> true
     )
 
     val result = invalidJson.validate[AuthResponseResult]

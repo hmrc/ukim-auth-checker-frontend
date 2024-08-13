@@ -147,5 +147,31 @@ class ResultControllerSpec extends AnyWordSpec with Matchers with MockitoSugar {
       status(result) shouldBe OK
       contentAsString(result) shouldBe "EORI Not Found"
     }
+
+    "return OK and render the result view when the connector returns a response with valid = false" in {
+      val eoriNumber = "GB1234567890"
+      val datedAuthRequest = DatedAuthorisationRequest(
+        eoris = Seq(Eori(eoriNumber)),
+        date = LocalDate.now().toString
+      )
+
+      val authResponse = AuthResponse(
+        processingDate = LocalDateTime.now(),
+        authType = "UKIM",
+        results = Seq(AuthCheckerResult(Eori(eoriNumber), valid = false, code = 400))
+      )
+
+      when(mockPdsAuthCheckerConnector.check(eqTo(datedAuthRequest))(any(), any()))
+        .thenReturn(Future.successful(Right(authResponse)))
+
+      when(mockResultView.apply(eqTo(false), eqTo(Some(eoriNumber)))(any(), any()))
+        .thenReturn(Html("Result with validation = false"))
+
+      val result = controller.onPageLoad()(FakeRequest().withSession("eori" -> eoriNumber))
+
+      status(result) shouldBe OK
+      contentAsString(result) shouldBe "Result with validation = false"
+      verify(mockResultView).apply(eqTo(false), eqTo(Some(eoriNumber)))(any(), any())
+    }
   }
 }
