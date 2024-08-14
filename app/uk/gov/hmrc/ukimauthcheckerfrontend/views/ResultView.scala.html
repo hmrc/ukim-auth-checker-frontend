@@ -15,14 +15,26 @@
  *@
 
 @import uk.gov.hmrc.ukimauthcheckerfrontend.controllers.routes
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
-@this(layout: Layout)
+@this(layout: Layout, govukPanel : GovukPanel)
 
-@()(implicit request: RequestHeader, messages: Messages)
+@(isValid: Boolean, eoriNumber: Option[String])(implicit request: RequestHeader, messages: Messages)
 
 @layout(
-  pageTitle = Some("Result Page"),
-  backLinkUrl = Some(routes.InputController.onPageLoad.url)) {
-<h1 class="govuk-heading-xl">Result Page</h1>
-<p class="govuk-body">@{messages("service.text")}</p>
+pageTitle = if(isValid) Some(messages("result.isvalid.title", eoriNumber.getOrElse("") )) else Some(messages("result.notvalid.title")),
+backLinkUrl = Some(routes.InputController.onPageLoad.url)) {
+
+@if(isValid) {
+  @govukPanel(Panel(
+    title = Text(messages("result.isvalid.title", eoriNumber.getOrElse("") ))
+  ))
+  <p class="govuk-body">@messages("result.isvalid.content")</p>
+} else {
+  <h1 class="govuk-heading-xl">@messages("result.notvalid.title")</h1>
+  <p class="govuk-body">@messages("result.notvalid.content", eoriNumber.getOrElse("")).</p>
+}
+<p class="govuk-body"><a href="@routes.InputController.onPageLoad" class="govuk-link">@messages("result.checkanother")</a></p>
+
+<p class="govuk-body"><a href="@routes.ResultController.onPageLoad" class="govuk-link">@messages("result.open-new-tab")</a></p>
 }

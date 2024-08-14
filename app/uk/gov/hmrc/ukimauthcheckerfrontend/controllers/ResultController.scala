@@ -16,20 +16,58 @@
 
 package uk.gov.hmrc.ukimauthcheckerfrontend.controllers
 
+import javax.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ukimauthcheckerfrontend.views.html.ResultView
+import uk.gov.hmrc.ukimauthcheckerfrontend.connectors.PdsAuthCheckerConnector
+import uk.gov.hmrc.ukimauthcheckerfrontend.config.ErrorHandler
+import uk.gov.hmrc.ukimauthcheckerfrontend.models.{DatedAuthorisationRequest, Eori}
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
+import java.time.LocalDate
 
 @Singleton
 class ResultController @Inject()(
-  mcc: MessagesControllerComponents,
-  resultView: ResultView)
-  extends FrontendController(mcc) {
+                                  mcc: MessagesControllerComponents,
+                                  resultView: ResultView,
+                                  pdsAuthCheckerConnector: PdsAuthCheckerConnector,
+                                  errorHandler: ErrorHandler
+                                )(implicit ec: ExecutionContext) extends FrontendController(mcc) {
 
-  val onPageLoad: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(resultView()))
+  def onPageLoad: Action[AnyContent] = Action.async { implicit request =>
+    request.session.get("eori") match {
+      case Some(eoriNumber) =>
+        val datedAuthRequest = DatedAuthorisationRequest(
+          eoris = Seq(Eori(eoriNumber)),
+          date = LocalDate.now().toString
+        )
+
+        pdsAuthCheckerConnector.check(datedAuthRequest).flatMap {
+          case Right(response) =>
+            val isValid: Boolean = response.results.head.valid
+            Future.successful(Ok(resultView(isValid = isValid, Some(eoriNumber))))
+          case Left(validationError) =>
+            errorHandler.standardErrorTemplate(
+              pageTitle = "Validation Error",
+              heading = "Validation Error",
+              message = "An error occurred while validating your request"
+            ).map(BadRequest(_))
+        }.recoverWith {
+          case ex: Exception =>
+            errorHandler.standardErrorTemplate(
+              pageTitle = "Internal Server Error",
+              heading = "Internal Server Error",
+              message = "An unexpected error occurred while processing your request."
+            ).map(InternalServerError(_))
+        }
+
+      case None =>
+        errorHandler.standardErrorTemplate(
+          pageTitle = "Error",
+          heading = "EORI Not Found",
+          message = "The EORI number could not be found in the session. Please try again."
+        ).map(Ok(_))
+    }
   }
 }

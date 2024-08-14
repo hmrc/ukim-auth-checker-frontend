@@ -18,4 +18,12 @@ eori-input.error.country-code = Re-enter the EORI number with the correct prefix
 input-page.eori-input.error.eori-number = EORI number must be 12 or 15 digits long
 eori-input.error.eori-number = Re-enter an EORI number with the correct number of digits
 
+##### Result Page
+result.isvalid.title = {0} has UKIMS authorisation
+result.isvalid.content = There is no EU duty payable on these goods as they're 'not at risk' of moving to the EU.
+result.notvalid.title = EORI number does not have UKIMS authorisation
+result.notvalid.content = The business with the EORI number {0} does not have UKIMS authorisation.
+result.checkanother = Check another EORI number
+result.open-new-tab = Is this page not working properly? (opens in new tab)
+
 

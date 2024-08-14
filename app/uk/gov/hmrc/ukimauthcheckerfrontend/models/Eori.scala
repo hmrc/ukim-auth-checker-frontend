@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ukimauthcheckerfrontend.config
+package uk.gov.hmrc.ukimauthcheckerfrontend.models
 
-import javax.inject.{Inject, Singleton}
-import play.api.Configuration
-import io.lemonlabs.uri.{Url, UrlPath}
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import play.api.libs.json
 
+import scala.util.matching.Regex
 
-@Singleton
-class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig)  {
-  val welshLanguageSupportEnabled: Boolean = config.getOptional[Boolean]("features.welsh-language-support").getOrElse(false)
+case class Eori(value: String) extends AnyVal
 
-  val betaFeedbackUrl: String = Url.parse("/").toString();
+object Eori {
+  val Regex: Regex = "^(GB|XI)\\d{12}$".r
 
-  val pdsAuthCheckerUrl = Url.parse(servicesConfig.baseUrl("pds-auth-checker-api"))
+  implicit val reads: json.Reads[Eori] = json.Reads.pattern(Regex, s"EORI format invalid").map(Eori.apply)
+  implicit val writes: json.Writes[Eori] = implicitly[json.Writes[String]].contramap(_.value)
 }
