@@ -1,5 +1,5 @@
 
-# UKIM Auth Checked Frontend (frontend)
+# UKIM Auth Checker Frontend
 
 This repository contains the necessary code to display user journey for UKIM Auth Checker Frontend
 
