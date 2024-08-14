@@ -8,7 +8,7 @@ The codebase uses the none scaffolding route with no database
 ### Overview
 
 The Frontend is for a new UK Internal Market Scheme (UKIMS) for internal trade that enables traders to self-assess their goods’ destination as At Risk (AR) or Not at Risk (NAR).
-It will take in one UKIM number, make a call to the backend (https://github.com/hmrc/pds-auth-checker-api), returning the UKIM numbers validity.
+It will take in an EORI number, make a call to the backend (https://github.com/hmrc/pds-auth-checker-api), and returns whether the EORI number is associated with a valid or invalid UKIMs Authorisation
 
 ### Running in DEV mode
 
